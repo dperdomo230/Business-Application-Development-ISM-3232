@@ -1,2 +1,2 @@
 # Business-Application-Development-ISM-3232
-This repository will contain source code for my projects from ISM 3232 or Business Application Development. The applications are coded using C# .NET Framework. I worked mainly with windows forms and graphical user interfaces.
+This repository will contain source code for my projects from ISM 3232 or Business Application Development. The applications are coded using C# .NET Framework. I worked mainly with windows forms and graphical user interfaces or GUIs. Applications were coded using Windows Visual Studio. In the source code one can observe professional programming conventions like indentation, comments, and proper spacing.
