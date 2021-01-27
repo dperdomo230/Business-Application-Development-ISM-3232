@@ -1,0 +1,347 @@
+// Programmer: Daniel Perdomo
+// Project: Assignment 4
+// Date: 13 April 2019
+// Description: This is the Registration Form for Hopkins Film School registration. Program is used to process registration information. 
+
+using System;
+using System.Windows.Forms;
+using System.IO;
+
+namespace Perdomo_4
+{
+    public partial class RegistrationForm : Form
+    {
+        // Declare class level constants for later use in the program
+        private const decimal LIVE_ACTION_CLASS = 79.95m;
+        private const decimal ANIMATION_CLASS = 99.95m;
+        private const int MAX_CLASSES = 4;
+
+        // Declare private fields for later use in the program
+        private decimal totalPrice = 0m;
+        private decimal pricePerClass = 0m;
+        private int numberOfClasses = 0;
+
+        public RegistrationForm()
+        {
+            InitializeComponent();
+        }
+
+        // Custom method to update the number of classes, price per class, and total price of the 
+        // registration process
+        private void UpdateTotals()
+        {
+            pricePerClass = 0;
+            numberOfClasses = 0;
+
+            // If else staments to determine the price per class depending on the radio button selection
+            if (liveActionRadioButton.Checked)
+            {
+                pricePerClass += LIVE_ACTION_CLASS;
+                
+            }
+            else 
+            {
+                pricePerClass += ANIMATION_CLASS;
+                
+            }
+
+            // For loop to update the number of classes depending on user input
+            for (int counter = 0; counter < classesListBox.Items.Count; counter++)
+            {
+                if (classesListBox.GetSelected(counter))
+                {
+                    numberOfClasses += 1;
+                }
+            }
+           
+            // Calculation for total price of the selected classes
+            totalPrice = numberOfClasses * pricePerClass;
+
+            // Display all the totals in the appropriate label
+            numberOfClassesOutputLabel.Text = numberOfClasses.ToString();
+            pricePerClassOutputLabel.Text = pricePerClass.ToString("c");
+            totalPriceOutputLabel.Text = totalPrice.ToString("c");
+        }
+
+        private void PopulateList()
+        {
+            try
+            {
+                // Declare stream reader variable 
+                StreamReader inputFile;
+
+                // if else statements to correctly display the appropriate
+                // classes depending on the selection of the radio button
+                if (liveActionRadioButton.Checked)
+                {
+                    classesListBox.Items.Clear();
+                    inputFile = File.OpenText("LiveActionClasses.txt");
+
+                    while (!inputFile.EndOfStream)
+                    {
+                        classesListBox.Items.Add(inputFile.ReadLine());
+                    }
+                    inputFile.Close(); // Close the input file
+                }
+                else
+                {
+                    classesListBox.Items.Clear();
+                    inputFile = File.OpenText("AnimationClasses.txt");
+
+                    while (!inputFile.EndOfStream)
+                    {
+                        classesListBox.Items.Add(inputFile.ReadLine());
+                    }
+                    inputFile.Close(); // Close the input file
+                }
+            }
+            catch (Exception ex)
+            {
+                // Display message if error occurs
+                MessageBox.Show(ex.Message);
+            }
+        }           
+        
+        // Custom method used to reset the form to the original default view
+        private void ResetForm()
+        {
+            firstNameTextBox.Text = "";
+            lastNameTextBox.Text = "";
+            emailTextBox.Text = "";
+            dateOfBirthMaskedTextBox.Text = "";
+            registrantStatusComboBox.SelectedIndex = -1;
+            liveActionRadioButton.Checked = true;
+            classesListBox.SelectedIndex = -1;
+            cashRadioButton.Checked = true;
+            emailRecepitCheckBox.Checked = false;
+            firstNameTextBox.Focus();
+        } 
+
+        // Load event handler to correctly load the form with the appropriate information displayed
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            // Display the current date (system clock)
+            registrationDateMaskedTextBox.Text = DateTime.Now.ToString("MM/dd/yyyy");
+
+            // Decalre string array for use in registrant status combo box
+            string[] registrantStatusArray = new string[] { "Actor", "Producer", "Director", "Animator", "Cinematographer" 
+                , "Drama Teacher", "Light Technician", "Sound Technician" };
+
+            // For loop used to populate the registrant combo box upon form load
+            for (int index = 0; index < registrantStatusArray.Length; index++)
+                registrantStatusComboBox.Items.Add(registrantStatusArray[index]);
+
+            // Custom method call to populate the list boxes with the appropriate classes
+            PopulateList();
+
+            // Custom method call to update the totals upon form load
+            UpdateTotals();
+        }
+
+        // Live action classes radio button even handler used to change the classes displayed
+        // in the list box 
+        private void liveActionRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            // UpdateTotals and PopulateList custom method call to perform adequate action 
+            // depending on the radio button checked property
+            UpdateTotals();
+            PopulateList();        
+        }
+
+        // Animation classes radio button event handler used to change the classes displayed
+        // in the list box 
+        private void animationRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            // UpdateTotals and PopulateList custom method call to perform adequate action 
+            // depending on the radio button checked property
+            UpdateTotals();
+            PopulateList();
+        }
+
+        // Classes list box event handler
+        private void classesListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // UpdateTotals method call used to update the totals depending on the 
+            // number of classes selected by the user
+            UpdateTotals();
+        }
+
+        // Save tool strip menu item click even handler used to display error messages when 
+        // necessary. Also displays registration information in a message box, and 
+        // outputs all the information to a txt file.
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // If else if else, used to display error messages depending on whether the 
+            // information is adequately filled in. (First name, last name, email, date of birth
+            // must be filled in). Also, the user must not select more than 4 classes or choose 0 classes.
+            if (firstNameTextBox.Text == "")
+            {
+                // Display first name input error message
+                MessageBox.Show("Please input your first name.", "Data Entry Error", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            else if (lastNameTextBox.Text == "")
+            {
+                // Display last name input error message
+                MessageBox.Show("Please input your last name.", "Data Entry Error", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            else if (emailTextBox.Text == "")
+            {
+                // Display email input error message
+                MessageBox.Show("Please input your full email address.", "Data Entry Error", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            else if (dateOfBirthMaskedTextBox.MaskCompleted == false)
+            {
+                // Display date of birth input error message
+                MessageBox.Show("Please correctly input your date of birth.", "Data Entry Error", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            else if (classesListBox.SelectedItems.Count > MAX_CLASSES)
+            {
+                // Display class selection error message
+                MessageBox.Show("Please select only one to four classes.", "Data Entry Error", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            else if(classesListBox.SelectedItems.Count == 0)
+            {
+                // Display class selection error message
+                MessageBox.Show("Please do not select zero classes.", "Data Entry Error", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            else
+            {
+                // Declare string variable for the type of class
+                string classType;
+
+                // If else statements to retrieve string from radio buttons
+                if (liveActionRadioButton.Checked)
+                {
+                    classType = "Live Action";
+                }
+                else
+                {
+                    classType = "Animation";
+                }
+
+                // Declare string variable for each available class added to registration
+                string availableClasses = "\n";
+
+                // For loop to adequately display each additional class selected on a seperate line
+                for (int counter = 0; counter < classesListBox.Items.Count; counter++)
+                {
+                    if (classesListBox.GetSelected(counter))
+                    {
+                        availableClasses += " " + classesListBox.Items[counter] + "\n";
+                    }
+                }
+
+                // Declare string variable for payment type
+                string paymentType;
+
+                // If else statments to retrieve string from radio buttons
+                if (cashRadioButton.Checked)
+                {
+                    paymentType = "Cash";
+                }
+                else
+                {
+                    paymentType = "Check";
+                }
+
+                // Declare string variable for email receipt requested
+                string emailReceipt;
+
+                // If else statements to retrieve string from check box
+                if (emailRecepitCheckBox.Checked)
+                {
+                    emailReceipt = "Yes";
+                }
+                else
+                {
+                    emailReceipt = "No";
+                }
+
+                // Display adequate message showing all the registration information depending on 
+                // selections made by the user
+                MessageBox.Show("Registration Date: " + registrationDateMaskedTextBox.Text + "\n" + "\n" +
+                    "Registrant Name: " + firstNameTextBox.Text + " " + lastNameTextBox.Text + "\n" + "\n" + "Email Address: " +
+                    emailTextBox.Text + "\n" + "\n" + "Date of Birth: " + dateOfBirthMaskedTextBox.Text + "\n" + "\n" + "Registrant Status: "
+                    + registrantStatusComboBox.Text + "\n" + "\n" + "Classes Selected: " + availableClasses + "\n" + "\n" + "Number of Classes: " 
+                    + numberOfClasses.ToString() +"\n"+"\n"+ "Price Per Class: " + pricePerClass.ToString("c") +
+                    "\n" + "\n" + "Total Registration Price: " + totalPrice.ToString("c") + "\n" + "\n" + "Payment Type: " + paymentType +
+                    "\n" + "\n" + "Email Receipt Requested: " + emailReceipt, "Registration Summary", MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                // try catch to output registration data to the appropriate txt file 
+                try
+                {
+                    // Declare stream writer variable
+                    StreamWriter outputFile;
+                    outputFile = File.AppendText("RegistrationData.txt");
+
+                    // Write each piece of registration data on the txt file in the correct order
+                    // and display all the selections made by the user
+                    outputFile.WriteLine("Registration Date: " + registrationDateMaskedTextBox.Text);
+                    outputFile.WriteLine("Registrant Name: " + firstNameTextBox.Text + " " + lastNameTextBox.Text);
+                    outputFile.WriteLine("Email Address: " + emailTextBox.Text);
+                    outputFile.WriteLine("Date of Birth: " + dateOfBirthMaskedTextBox.Text);
+                    outputFile.WriteLine("Registrant Status: " + registrantStatusComboBox.Text);
+                    outputFile.WriteLine("Classes Selected: " + availableClasses);
+                    outputFile.WriteLine("Number of Classes: " + numberOfClasses.ToString());
+                    outputFile.WriteLine("Price Per Class: " + pricePerClass.ToString("c"));
+                    outputFile.WriteLine("Total Registration Price: " + totalPrice.ToString("c"));
+                    outputFile.WriteLine("Payment Type: " + paymentType);
+                    outputFile.WriteLine("Email Receipt Requested: " + emailReceipt);
+
+                    outputFile.WriteLine(); // Write a blank line to the file
+                    outputFile.Close(); // Close output file after writing data
+                }
+                catch (Exception ex)
+                {
+                    // Display message if error occurs
+                    MessageBox.Show(ex.Message);
+                }
+
+                // ResetForm custom method call to set the form back to the default state
+                // after clicking the save tool strip menu item
+                ResetForm();
+            }
+        }
+
+        // Clear tool strip menu item event handler
+        private void clearToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // // ResetForm custom method call to set the form back to the default state
+            ResetForm();
+        }
+        // Exit button click event handler to prompt user to exit the program
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Declare variable to hold user selection in dialog box
+            DialogResult selection;
+
+            // Prompt user with exit confirmation, including the question icon
+            selection = MessageBox.Show("Are you sure you wish to exit the program?",
+                "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            // Take appropriate action base on user selection in dialog box
+            if (selection == DialogResult.Yes)
+            {
+                // Close the form and end the program
+                this.Close();
+            }
+        }
+
+        // Display the about form when the menu item is clicked
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Create an instance of the about form class
+            AboutForm newAboutForm = new AboutForm();
+
+            // Display the form
+            newAboutForm.ShowDialog();
+        }
+    }
+}
